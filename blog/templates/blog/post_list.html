@@ -2,13 +2,39 @@
 
 {% block content %}
 <h1>Tech Blog</h1>
-{% for post in posts %}
+{% if selected_category %}
+  <h4>Category: {{ selected_category.name }}</h4>
+{% endif %}
+{% if search_term %}
+  <h4>Results for "{{ search_term }}"</h4>
+{% endif %}
+
+{% for post in page_obj %}
   <div class="card mb-3">
     <div class="card-body">
-      <h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
-      <p class="text-muted">By {{ post.author }} on {{ post.created_at }}</p>
+      <h2>
+        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
+      </h2>
+      <p class="text-muted">By {{ post.author }} on {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+      {% if post.category %}
+        <p>Category: <a href="{% url 'posts_by_category' post.category.id %}">{{ post.category.name }}</a></p>
+      {% endif %}
       <p>{{ post.content|truncatewords:30 }}</p>
     </div>
   </div>
+{% empty %}
+  <p>No posts found.</p>
 {% endfor %}
+
+<div class="pagination mt-3">
+  {% if page_obj.has_previous %}
+    <a class="btn btn-outline-primary" href="?page=1">First</a>
+    <a class="btn btn-outline-primary" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a class="btn btn-outline-primary" href="?page={{ page_obj.next_page_number }}">Next</a>
+    <a class="btn btn-outline-primary" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+  {% endif %}
+</div>
 {% endblock %}
